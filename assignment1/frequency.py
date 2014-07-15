@@ -1,5 +1,16 @@
 import sys
 import json
+import operator
+
+def get_english_tweet_texts(fname):
+    with open(fname) as tweet_file:
+        for line in tweet_file:
+            j = json.loads(line)
+            if "lang" in j and j["lang"] == "en":
+                try:
+                    yield json.loads(line)['text']
+                except KeyError:
+                    pass
 
 def get_tweet_texts(fname):
     with open(fname) as tweet_file:
@@ -10,7 +21,7 @@ def get_tweet_texts(fname):
                 pass
 
 def main():
-    tweet_txts = get_tweet_texts(sys.argv[1])
+    tweet_txts = get_english_tweet_texts(sys.argv[1])
 
     term_freqs = {}
     total_terms = 0
@@ -20,8 +31,10 @@ def main():
         for term in splt:
             term_freqs[term] = term_freqs.get(term, 0) + 1
 
-    for term, freq in term_freqs.iteritems():
-        print term, float(freq) / total_terms
+    s = sorted(term_freqs.iteritems(), key=operator.itemgetter(1), reverse=True)
+
+    for i in range(10):
+        print s[i][0], s[i][1] / float(total_terms)
 
 if __name__ == '__main__':
     main()
