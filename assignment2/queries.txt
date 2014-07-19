@@ -1,2 +1,40 @@
 1.a. select count(*) from frequency where docid = "10398_txt_earn";
   b. select count(term) from frequency where docid="10398_txt_earn" and count=1;
+  c. select count(*) from (
+       select distinct term from frequency where docid="10398_txt_earn" and count=1
+       union
+       select distinct term from frequency where docid="925_txt_trade" and count=1
+  );
+  d. select count(distinct docid) from frequency where term="parliament";
+  e. select count(*) from (select docid from frequency group by docid having sum(count) > 300);
+  f. select count(distinct docid) from frequency f1 INNER JOIN frequency f2 using (docid) where f1.term="transactions" and f2.term="world";
+
+2.g. select A.row_num, B.col_num, sum(A.value * B.value)
+     from A, B
+     where A.col_num = B.row_Num
+     group by A.row_num, B.col_num;
+
+3.h.select similarity from
+     (select D.docid as doc1, DT.docid as doc2, sum(D.count * DT.count) as similarity
+     from frequency D, frequency DT
+     where D.term = DT.term and D.docid < DT.docid
+     group by D.docid, DT.docid)
+    where doc1="10080_txt_crude" and doc2="17035_txt_earn"
+     or doc2="10080_txt_crude" and doc1="17035_txt_earn";
+
+  i.create view query as
+      select * from frequency
+      union
+      select 'q' as docid, 'washington' as term, 1 as count
+      union
+      select 'q' as docid, 'taxes' as term, 1 as count
+      union
+      select 'q' docid, 'treasury' as term, 1 as count;
+    
+    create view qsim as
+      select docid, sum(count) as similarity
+      from query
+      where (term='washington' or term='taxes' or term='treasury') and docid <> 'q'
+      group by docid;
+
+    select max(similarity) from qsim;
